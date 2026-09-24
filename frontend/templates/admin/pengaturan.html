@@ -1,0 +1,58 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Pengaturan - Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-topbar">
+  <div>
+    <h1>Pengaturan Jadwal</h1>
+    <div class="sub">Atur jadwal shalat dan petugas Shalat Jumat yang tampil di halaman publik.</div>
+  </div>
+</div>
+
+<form method="post" class="settings-grid">
+  <section class="panel">
+    <h3><i class="fa-regular fa-clock"></i> Waktu Shalat Harian</h3>
+    <div class="form-grid-2">
+      {% set prayer_fields = [
+        ('shalat_imsyak', 'imam_imsyak', 'Imsyak', jadwal.waktu_shalat.Imsyak, jadwal.imam_shalat.Imsyak),
+        ('shalat_subuh', 'imam_subuh', 'Subuh', jadwal.waktu_shalat.Subuh, jadwal.imam_shalat.Subuh),
+        ('shalat_dzuhur', 'imam_dzuhur', 'Dzuhur', jadwal.waktu_shalat.Dzuhur, jadwal.imam_shalat.Dzuhur),
+        ('shalat_ashar', 'imam_ashar', 'Ashar', jadwal.waktu_shalat.Ashar, jadwal.imam_shalat.Ashar),
+        ('shalat_maghrib', 'imam_maghrib', 'Maghrib', jadwal.waktu_shalat.Maghrib, jadwal.imam_shalat.Maghrib),
+        ('shalat_isya', 'imam_isya', 'Isya', jadwal.waktu_shalat.Isya, jadwal.imam_shalat.Isya)
+      ] %}
+      {% for time_key, imam_key, label, time_value, imam_value in prayer_fields %}
+      <div class="field">
+        <label for="{{ time_key }}">{{ label }} - Waktu</label>
+        <input id="{{ time_key }}" type="time" name="{{ time_key }}" value="{{ time_value }}" required>
+        <label for="{{ imam_key }}">Imam {{ label }}</label>
+        <input id="{{ imam_key }}" type="text" name="{{ imam_key }}" value="{{ imam_value }}" required>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3><i class="fa-solid fa-mosque"></i> Shalat Jumat</h3>
+    <div class="field">
+      <label for="jumat_waktu">Waktu</label>
+      <input id="jumat_waktu" type="time" name="jumat_waktu" value="{{ jadwal.jadwal_jumat.waktu }}" required>
+    </div>
+    <div class="field">
+      <label for="jumat_imam">Imam</label>
+      <input id="jumat_imam" type="text" name="jumat_imam" value="{{ jadwal.jadwal_jumat.imam }}" required>
+    </div>
+    <div class="field">
+      <label for="jumat_khotib">Khatib</label>
+      <input id="jumat_khotib" type="text" name="jumat_khotib" value="{{ jadwal.jadwal_jumat.khotib }}" required>
+    </div>
+    <div class="field">
+      <label for="jumat_muadzin">Muadzin</label>
+      <input id="jumat_muadzin" type="text" name="jumat_muadzin" value="{{ jadwal.jadwal_jumat.muadzin }}" required>
+    </div>
+  </section>
+
+  <div class="settings-actions">
+    <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Jadwal</button>
+  </div>
+</form>
+{% endblock %}

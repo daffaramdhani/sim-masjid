@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Laporan Kas - Sistem Informasi Masjid{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:36px;">
+  <h1 style="font-size:1.7rem;color:var(--green-900);margin-bottom:4px;">Laporan Kas Masjid</h1>
+  <p style="color:var(--muted);margin-bottom:26px;">Laporan keuangan masjid secara transparan dan akuntabel.</p>
+
+  <div class="kas-stats">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="fa-solid fa-wallet"></i></div>
+      <div><div class="stat-label">Saldo Kas</div><div class="stat-value">{{ saldo | rupiah }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="fa-solid fa-arrow-up"></i></div>
+      <div><div class="stat-label">Pemasukan ({{ nama_bulan }} {{ tahun }})</div><div class="stat-value">{{ total_masuk | rupiah }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red"><i class="fa-solid fa-arrow-down"></i></div>
+      <div><div class="stat-label">Pengeluaran ({{ nama_bulan }} {{ tahun }})</div><div class="stat-value">{{ total_keluar | rupiah }}</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon gold"><i class="fa-solid fa-coins"></i></div>
+      <div><div class="stat-label">Saldo Akhir</div><div class="stat-value">{{ saldo | rupiah }}</div></div>
+    </div>
+  </div>
+
+  <div class="kas-lower-grid">
+    <div class="panel">
+      <h3>Ringkasan {{ nama_bulan }} {{ tahun }}</h3>
+      <div class="legend-row">
+        <span><span class="legend-dot" style="background:#1B7A42;"></span>Pemasukan</span>
+        <span><span class="legend-dot" style="background:#C0463A;"></span>Pengeluaran</span>
+      </div>
+      <canvas id="kasChart" height="220"></canvas>
+    </div>
+    <div class="panel">
+      <h3>Rincian Kategori ({{ nama_bulan }} {{ tahun }})</h3>
+      {% for r in rincian %}
+      <div class="rincian-row"><span>{{ r.kategori }}</span><span>{{ r.total | rupiah }}</span></div>
+      {% else %}
+      <p style="color:var(--muted);font-size:.86rem;">Belum ada data pemasukan bulan ini.</p>
+      {% endfor %}
+      <div class="rincian-row total"><span>Total Pemasukan</span><span>{{ total_pemasukan_bulan | rupiah }}</span></div>
+    </div>
+  </div>
+
+  <div class="center-btn">
+    <a href="#" class="btn-secondary"><i class="fa-regular fa-calendar"></i> Lihat Laporan Bulan Lain ></a>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('kasChart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: {{ labels | tojson }},
+    datasets: [
+      { label: 'Pemasukan', data: {{ masuk | tojson }}, backgroundColor: '#1B7A42', borderRadius: 4, maxBarThickness: 22 },
+      { label: 'Pengeluaran', data: {{ keluar | tojson }}, backgroundColor: '#C0463A', borderRadius: 4, maxBarThickness: 22 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { grid: { color: '#EFE9D8' }, ticks: { callback: (v) => (v/1000000) + ' Jt' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

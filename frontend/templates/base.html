@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Sistem Informasi Masjid{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="pattern-corner pattern-tl"></div>
+<div class="pattern-corner pattern-tr"></div>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="{{ url_for('beranda') }}" class="brand">
+      <span class="brand-icon"><img src="{{ url_for('static', filename='img/masjid.png') }}" alt="Logo masjid"></span>
+      <span>Sistem Informasi Masjid</span>
+    </a>
+    <nav class="main-nav">
+      <a href="{{ url_for('beranda') }}" class="{{ 'active' if request.endpoint=='beranda' }}">Beranda</a>
+      <a href="{{ url_for('beranda') }}#profil">Profil</a>
+      <a href="{{ url_for('kegiatan_publik') }}" class="{{ 'active' if request.endpoint=='kegiatan_publik' }}">Kegiatan</a>
+      <a href="{{ url_for('kajian_publik') }}" class="{{ 'active' if request.endpoint=='kajian_publik' }}">Kajian</a>
+      <a href="{{ url_for('berita_publik') }}" class="{{ 'active' if request.endpoint=='berita_publik' }}">Berita</a>
+      <a href="{{ url_for('pengumuman_publik') }}" class="{{ 'active' if request.endpoint=='pengumuman_publik' }}">Pengumuman</a>
+      <a href="{{ url_for('laporan_kas_publik') }}" class="{{ 'active' if request.endpoint=='laporan_kas_publik' }}">Laporan Kas</a>
+    </nav>
+    <button class="mobile-nav-toggle" type="button" aria-label="Buka menu navigasi" aria-expanded="false">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="brand footer-brand">
+      <span class="brand-icon"><img src="{{ url_for('static', filename='img/masjid.png') }}" alt="Logo masjid"></span>
+      <span>Sistem Informasi Masjid</span>
+    </div>
+    <p>Media informasi dan transparansi kegiatan serta keuangan masjid untuk kemaslahatan umat.</p>
+    <p class="footer-copy">© {{ now().year if now else '2025' }} Sistem Informasi Masjid Nurul Hasanah. Dibangun dengan amanah.</p>
+  </div>
+</footer>
+
+<div class="pattern-corner pattern-bl"></div>
+<div class="pattern-corner pattern-br"></div>
+
+{% block scripts %}{% endblock %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const header = document.querySelector('.site-header');
+    const toggle = document.querySelector('.mobile-nav-toggle');
+    const links = document.querySelectorAll('.main-nav a');
+    if (!header || !toggle) return;
+
+    const closeMenu = () => {
+      header.classList.remove('nav-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Buka menu navigasi');
+      toggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+    };
+
+    toggle.addEventListener('click', function () {
+      const open = header.classList.toggle('nav-open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.setAttribute('aria-label', open ? 'Tutup menu navigasi' : 'Buka menu navigasi');
+      toggle.innerHTML = open ? '<i class="fa-solid fa-xmark"></i>' : '<i class="fa-solid fa-bars"></i>';
+    });
+
+    links.forEach(function (link) {
+      link.addEventListener('click', closeMenu);
+    });
+  });
+</script>
+</body>
+</html>

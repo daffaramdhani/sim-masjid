@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Admin - Sistem Informasi Masjid</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-side">
+      <img class="login-logo" src="{{ url_for('static', filename='img/masjid.png') }}" alt="Logo masjid">
+      <h2>Sistem Informasi Masjid</h2>
+      <p>Login Admin</p>
+    </div>
+    <div class="login-form">
+      <h2>Selamat Datang</h2>
+      <div class="sub">Masuk untuk mengelola data masjid</div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, msg in messages %}
+          <div class="flash {{ category }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="POST">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="admin@masjid.id" required value="admin@masjid.id">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••••" required value="admin123">
+        </div>
+        <div class="field-row-between">
+          <label><input type="checkbox" checked style="width:auto;"> Ingat saya</label>
+          <a href="#" style="color:var(--gold);">Lupa password?</a>
+        </div>
+        <button type="submit" class="btn-block">Masuk</button>
+      </form>
+      <div class="login-foot">© 2025 Sistem Informasi Masjid<br><span style="font-size:.72rem;">Demo: admin@masjid.id / admin123</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

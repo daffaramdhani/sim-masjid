@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Berita - Sistem Informasi Masjid{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="section-title" style="margin-top:36px;">Berita</h1>
+  <p class="section-sub">Informasi terbaru dari pengurus Masjid Nurul Hasanah.</p>
+
+  <div class="berita-grid">
+    {% for b in berita %}
+    <article class="berita-card">
+      {% if b.image_filename %}<img class="article-image" src="{{ url_for('static', filename='uploads/' + b.image_filename) }}" alt="{{ b.judul }}">{% endif %}
+      <div class="berita-date"><i class="fa-regular fa-calendar"></i> {{ b.tanggal }}</div>
+      <h2>{{ b.judul }}</h2>
+      <p>{{ b.isi or 'Belum ada isi berita.' }}</p>
+      <span class="berita-link"><i class="fa-solid fa-bullhorn"></i> Informasi Masjid</span>
+    </article>
+    {% else %}
+    <p class="empty-state">Belum ada berita yang dipublikasikan.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

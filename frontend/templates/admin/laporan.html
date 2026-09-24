@@ -1,0 +1,79 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Laporan Kas - Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-topbar">
+  <div>
+    <h1>Laporan Kas</h1>
+    <div class="sub">Kelola dan publikasikan laporan keuangan untuk jamaah.</div>
+  </div>
+  <form method="POST" action="{{ url_for('laporan_publikasikan') }}">
+    <input type="hidden" name="bulan" value="{{ bulan }}">
+    <input type="hidden" name="tahun" value="{{ tahun }}">
+    <button type="submit" class="btn-gold-solid"><i class="fa-solid fa-bullhorn"></i> Publikasikan untuk Jamaah</button>
+  </form>
+  <a href="{{ url_for('laporan_pdf', bulan=bulan, tahun=tahun) }}" class="btn-secondary"><i class="fa-solid fa-file-pdf"></i> Download PDF</a>
+</div>
+<div style="text-align:right;margin-top:-14px;margin-bottom:16px;color:var(--muted);font-size:.8rem;">
+  Terakhir dipublikasikan: {{ terakhir_publikasi }}
+</div>
+
+<div class="panel" style="margin-bottom:20px;">
+  <form method="get" style="display:flex;gap:12px;align-items:center;">
+    <label style="font-size:.85rem;font-weight:600;">Periode</label>
+    <select name="bulan" onchange="this.form.submit()">
+      {% for i, nama in bulan_list %}
+        {% if i > 0 %}<option value="{{ i }}" {{ 'selected' if i==bulan }}>{{ nama }} {{ tahun }}</option>{% endif %}
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-secondary">Tampilkan</button>
+  </form>
+</div>
+
+<div class="kas-stats" style="grid-template-columns:repeat(3,1fr);">
+  <div class="stat-card">
+    <div class="stat-icon gold"><i class="fa-solid fa-wallet"></i></div>
+    <div><div class="stat-label">Saldo Awal ({{ nama_bulan }})</div><div class="stat-value">{{ saldo_awal | rupiah }}</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="fa-solid fa-arrow-up"></i></div>
+    <div><div class="stat-label">Pemasukan</div><div class="stat-value">{{ pemasukan_bulan | rupiah }}</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red"><i class="fa-solid fa-arrow-down"></i></div>
+    <div><div class="stat-label">Pengeluaran</div><div class="stat-value">{{ pengeluaran_bulan | rupiah }}</div></div>
+  </div>
+</div>
+
+<div class="rincian-2col">
+  <div class="panel">
+    <h3>Rincian Pemasukan</h3>
+    {% for r in rincian_masuk %}
+    <div class="rincian-row"><span>{{ r.kategori }}</span><span>{{ r.total | rupiah }}</span></div>
+    {% else %}<p style="color:var(--muted);font-size:.85rem;">Tidak ada data.</p>{% endfor %}
+    <div class="rincian-row total"><span>Total Pemasukan</span><span>{{ pemasukan_bulan | rupiah }}</span></div>
+  </div>
+  <div class="panel">
+    <h3>Rincian Pengeluaran</h3>
+    {% for r in rincian_keluar %}
+    <div class="rincian-row"><span>{{ r.kategori }}</span><span>{{ r.total | rupiah }}</span></div>
+    {% else %}<p style="color:var(--muted);font-size:.85rem;">Tidak ada data.</p>{% endfor %}
+    <div class="rincian-row total"><span>Total Pengeluaran</span><span>{{ pengeluaran_bulan | rupiah }}</span></div>
+  </div>
+  <div class="panel">
+    <h3>Ringkasan</h3>
+    <div class="rincian-row"><span>Saldo Awal (1 {{ nama_bulan }} {{ tahun }})</span><span>{{ saldo_awal | rupiah }}</span></div>
+    <div class="rincian-row"><span>Pemasukan</span><span>{{ pemasukan_bulan | rupiah }}</span></div>
+    <div class="rincian-row"><span>Pengeluaran</span><span>{{ pengeluaran_bulan | rupiah }}</span></div>
+    <div class="rincian-row total"><span>Saldo Akhir ({{ bulan_list[bulan][1][:3] if bulan_list[bulan] else '' }})</span><span>{{ saldo_akhir | rupiah }}</span></div>
+  </div>
+</div>
+
+<div class="panel" style="margin-top:20px;">
+  <h3>Catatan Laporan</h3>
+  <p style="color:var(--muted);font-size:.88rem;line-height:1.6;">
+    Laporan ini disusun berdasarkan data transaksi yang telah diverifikasi.
+    {% if sudah_publikasi %} Laporan telah dipublikasikan dan dapat dilihat oleh jamaah pada halaman Laporan Kas publik.{% else %} Laporan belum dipublikasikan untuk jamaah.{% endif %}
+    Semoga menjadi amal jariyah bagi para donatur.
+  </p>
+</div>
+{% endblock %}

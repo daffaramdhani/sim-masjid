@@ -1,0 +1,123 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Data Jamaah - Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-topbar">
+  <div>
+    <h1>Data Jamaah</h1>
+    <div class="sub">Kelola data jamaah masjid.</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="toolbar">
+    <form class="search-box" method="get">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" name="q" value="{{ q }}" placeholder="Cari nama, telepon, atau alamat...">
+    </form>
+    <button class="btn-primary" onclick="document.getElementById('modalTambah').classList.add('open')">
+      <i class="fa-solid fa-plus"></i> Tambah Jamaah
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>No</th><th>Nama</th><th>Jenis Kelamin</th><th>No. Telepon</th><th>Alamat</th><th>Bergabung</th><th>Aksi</th></tr>
+      </thead>
+      <tbody>
+        {% for j in jamaah %}
+        <tr>
+          <td>{{ loop.index + (page-1)*5 }}</td>
+          <td>{{ j.nama }}</td>
+          <td>{{ j.jenis_kelamin }}</td>
+          <td>{{ j.no_telepon or '-' }}</td>
+          <td>{{ j.alamat or '-' }}</td>
+          <td>{{ j.tanggal_bergabung }}</td>
+          <td>
+            <button class="icon-btn edit" onclick="bukaEdit({{ j.id }}, {{ j.nama|tojson }}, {{ j.jenis_kelamin|tojson }}, {{ (j.no_telepon or '')|tojson }}, {{ (j.alamat or '')|tojson }})"><i class="fa-solid fa-pen"></i></button>
+            <form action="{{ url_for('jamaah_hapus', jid=j.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Hapus data jamaah ini?');">
+              <button class="icon-btn danger" type="submit"><i class="fa-solid fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align:center;color:var(--muted);">Tidak ada data ditemukan.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <div>Menampilkan {{ jamaah|length }} dari {{ total }} data</div>
+    <div class="page-nums">
+      {% if page > 1 %}<a href="{{ url_for('jamaah_list', q=q, page=page-1) }}"><i class="fa-solid fa-chevron-left"></i></a>{% endif %}
+      {% for p in range(1, total_pages+1) %}
+        {% if p <= 3 or p == total_pages or (p >= page-1 and p <= page+1) %}
+        <a href="{{ url_for('jamaah_list', q=q, page=p) }}" class="{{ 'active' if p==page }}">{{ p }}</a>
+        {% elif p == 4 %}
+        <span>...</span>
+        {% endif %}
+      {% endfor %}
+      {% if page < total_pages %}<a href="{{ url_for('jamaah_list', q=q, page=page+1) }}"><i class="fa-solid fa-chevron-right"></i></a>{% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah -->
+<div class="modal-overlay" id="modalTambah">
+  <div class="modal-box">
+    <h3>Tambah Jamaah</h3>
+    <form method="POST" action="{{ url_for('jamaah_tambah') }}">
+      <div class="field"><label>Nama Lengkap</label><input type="text" name="nama" required></div>
+      <div class="field"><label>Jenis Kelamin</label>
+        <select name="jenis_kelamin" required>
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
+        </select>
+      </div>
+      <div class="field"><label>No. Telepon</label><input type="text" name="no_telepon"></div>
+      <div class="field"><label>Alamat</label><input type="text" name="alamat"></div>
+      <div class="field"><label>Tanggal Bergabung</label><input type="date" name="tanggal_bergabung"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="document.getElementById('modalTambah').classList.remove('open')">Batal</button>
+        <button type="submit" class="btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal-overlay" id="modalEdit">
+  <div class="modal-box">
+    <h3>Edit Jamaah</h3>
+    <form method="POST" id="formEdit">
+      <div class="field"><label>Nama Lengkap</label><input type="text" name="nama" id="edit_nama" required></div>
+      <div class="field"><label>Jenis Kelamin</label>
+        <select name="jenis_kelamin" id="edit_jk" required>
+          <option value="Laki-laki">Laki-laki</option>
+          <option value="Perempuan">Perempuan</option>
+        </select>
+      </div>
+      <div class="field"><label>No. Telepon</label><input type="text" name="no_telepon" id="edit_telp"></div>
+      <div class="field"><label>Alamat</label><input type="text" name="alamat" id="edit_alamat"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="document.getElementById('modalEdit').classList.remove('open')">Batal</button>
+        <button type="submit" class="btn-primary">Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function bukaEdit(id, nama, jk, telp, alamat){
+  document.getElementById('edit_nama').value = nama;
+  document.getElementById('edit_jk').value = jk;
+  document.getElementById('edit_telp').value = telp;
+  document.getElementById('edit_alamat').value = alamat;
+  document.getElementById('formEdit').action = '/admin/jamaah/' + id + '/edit';
+  document.getElementById('modalEdit').classList.add('open');
+}
+</script>
+{% endblock %}

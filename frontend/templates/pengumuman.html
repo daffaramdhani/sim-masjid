@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Pengumuman - Sistem Informasi Masjid{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="section-title" style="margin-top:36px;">Pengumuman</h1>
+  <p class="section-sub">Informasi resmi terbaru dari pengurus Masjid Nurul Hasanah.</p>
+
+  <div class="announcement-list">
+    {% for p in pengumuman %}
+    <article class="announcement-card">
+      <div class="announcement-icon"><i class="fa-solid fa-bullhorn"></i></div>
+      <div>
+        <div class="announcement-date"><i class="fa-regular fa-calendar"></i> {{ p.tanggal }}</div>
+        <h2>{{ p.judul }}</h2>
+        <p>{{ p.isi or 'Tidak ada isi pengumuman.' }}</p>
+      </div>
+    </article>
+    {% else %}
+    <p class="empty-state">Belum ada pengumuman yang dipublikasikan.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

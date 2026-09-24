@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Admin - Sistem Informasi Masjid{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar" id="adminSidebar">
+    <div class="sidebar-head">
+      <div class="brand">
+        <span class="brand-icon"><img src="{{ url_for('static', filename='img/masjid.png') }}" alt="Logo masjid"></span>
+        <span class="brand-text">Sistem Informasi Masjid</span>
+      </div>
+      <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-label="Buka/Tutup sidebar">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+    </div>
+    <nav class="side-nav">
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint=='dashboard' }}" title="Dashboard"><i class="fa-solid fa-gauge"></i><span class="nav-text">Dashboard</span></a>
+      <a href="{{ url_for('jamaah_list') }}" class="{{ 'active' if request.endpoint in ['jamaah_list'] }}" title="Jamaah"><i class="fa-solid fa-users"></i><span class="nav-text">Jamaah</span></a>
+      <a href="{{ url_for('kegiatan_admin') }}" class="{{ 'active' if request.endpoint=='kegiatan_admin' }}" title="Kegiatan & Pengumuman"><i class="fa-solid fa-calendar-days"></i><span class="nav-text">Kegiatan &amp; Pengumuman</span></a>
+      <a href="{{ url_for('kajian_berita_admin') }}" class="{{ 'active' if request.endpoint=='kajian_berita_admin' }}" title="Kajian & Berita"><i class="fa-solid fa-newspaper"></i><span class="nav-text">Kajian &amp; Berita</span></a>
+      <a href="{{ url_for('profil_admin') }}" class="{{ 'active' if request.endpoint=='profil_admin' }}" title="Profil Masjid"><i class="fa-solid fa-mosque"></i><span class="nav-text">Profil Masjid</span></a>
+      <a href="{{ url_for('kas_admin') }}" class="{{ 'active' if request.endpoint=='kas_admin' }}" title="Kas Masjid"><i class="fa-solid fa-sack-dollar"></i><span class="nav-text">Kas Masjid</span></a>
+      <a href="{{ url_for('laporan_admin') }}" class="{{ 'active' if request.endpoint=='laporan_admin' }}" title="Laporan & Publikasi"><i class="fa-solid fa-chart-pie"></i><span class="nav-text">Laporan &amp; Publikasi</span></a>
+      <a href="{{ url_for('pengaturan_admin') }}" class="{{ 'active' if request.endpoint=='pengaturan_admin' }}" title="Pengaturan"><i class="fa-solid fa-sliders"></i><span class="nav-text">Pengaturan</span></a>
+      <a href="{{ url_for('beranda') }}" title="Pengunjung"><i class="fa-solid fa-globe"></i><span class="nav-text">Pengunjung</span></a>
+      <a href="#" title="Pengguna"><i class="fa-solid fa-user-gear"></i><span class="nav-text">Pengguna</span></a>
+    </nav>
+    <div class="side-logout">
+      <a href="{{ url_for('logout') }}" title="Logout"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="nav-text">Logout</span></a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, msg in messages %}
+        <div class="flash {{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block admin_content %}{% endblock %}
+  </main>
+</div>
+{% block scripts %}{% endblock %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('adminSidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    if (!sidebar || !toggleBtn) return;
+
+    const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+    const getCurrentCollapsed = () => isMobile() ? sidebar.classList.contains('mobile-collapsed') : sidebar.classList.contains('collapsed');
+    const getSavedState = () => {
+      try {
+        return localStorage.getItem(isMobile() ? 'adminSidebarMobileCollapsed' : 'adminSidebarCollapsed') === '1';
+      } catch (e) {
+        return false;
+      }
+    };
+
+    const applyState = (collapsed) => {
+      const mobile = isMobile();
+
+      sidebar.classList.toggle('collapsed', !mobile && collapsed);
+      sidebar.classList.toggle('mobile-collapsed', mobile && collapsed);
+
+      if (mobile) {
+        toggleBtn.setAttribute('aria-label', collapsed ? 'Buka sidebar' : 'Tutup sidebar');
+        toggleBtn.innerHTML = collapsed ? '<i class="fa-solid fa-chevron-down"></i>' : '<i class="fa-solid fa-chevron-up"></i>';
+      } else {
+        toggleBtn.setAttribute('aria-label', collapsed ? 'Buka sidebar' : 'Tutup sidebar');
+        toggleBtn.innerHTML = collapsed ? '<i class="fa-solid fa-chevron-right"></i>' : '<i class="fa-solid fa-chevron-left"></i>';
+      }
+
+      try {
+        localStorage.setItem(mobile ? 'adminSidebarMobileCollapsed' : 'adminSidebarCollapsed', collapsed ? '1' : '0');
+      } catch (e) {}
+    };
+
+    toggleBtn.addEventListener('click', function () {
+      applyState(!getCurrentCollapsed());
+    });
+
+    sidebar.querySelectorAll('.side-nav a, .side-logout a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        if (isMobile()) applyState(true);
+      });
+    });
+
+    applyState(getSavedState());
+
+    window.addEventListener('resize', function () {
+      applyState(getSavedState());
+    });
+  });
+</script>
+</body>
+</html>

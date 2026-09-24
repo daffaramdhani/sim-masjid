@@ -1,0 +1,36 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Kajian & Berita - Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-topbar">
+  <div>
+    <h1>Kajian & Berita</h1>
+    <div class="sub">Tulis materi kajian hadis dan berita terbaru untuk jamaah.</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <a href="{{ url_for('kajian_berita_admin', tab='kajian') }}" class="tab-link {{ 'active' if tab=='kajian' }}">Kajian</a>
+  <a href="{{ url_for('kajian_berita_admin', tab='berita') }}" class="tab-link {{ 'active' if tab=='berita' }}">Berita</a>
+</div>
+
+{% if tab == 'kajian' %}
+<div class="panel">
+  <div class="toolbar"><h3 style="margin:0;">Materi Kajian</h3><button class="btn-primary" onclick="document.getElementById('modalKajian').classList.add('open')"><i class="fa-solid fa-plus"></i> Tambah Kajian</button></div>
+  <div class="table-wrap"><table class="data-table"><thead><tr><th>Judul</th><th>Tema</th><th>Tanggal</th><th>Penulis</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+    {% for k in kajian %}<tr><td>{{ k.judul }}</td><td>{{ k.tema or '-' }}</td><td>{{ k.tanggal }}</td><td>{{ k.penulis or '-' }}</td><td><form action="{{ url_for('kajian_toggle_status', kid=k.id) }}" method="post"><button class="badge-status {{ 'badge-publikasi' if k.status=='Dipublikasikan' else 'badge-draft' }}" type="submit">{{ k.status }}</button></form></td><td><form action="{{ url_for('kajian_hapus', kid=k.id) }}" method="post" onsubmit="return confirm('Hapus materi kajian ini?');"><button class="icon-btn danger" type="submit"><i class="fa-solid fa-trash"></i></button></form></td></tr>
+    {% else %}<tr><td colspan="6" style="text-align:center;color:var(--muted);">Belum ada materi kajian.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% else %}
+<div class="panel">
+  <div class="toolbar"><h3 style="margin:0;">Berita Masjid</h3><button class="btn-primary" onclick="document.getElementById('modalBerita').classList.add('open')"><i class="fa-solid fa-plus"></i> Tambah Berita</button></div>
+  <div class="table-wrap"><table class="data-table"><thead><tr><th>Judul</th><th>Tanggal</th><th>Penulis</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+    {% for b in berita %}<tr><td>{{ b.judul }}</td><td>{{ b.tanggal }}</td><td>{{ b.penulis or '-' }}</td><td><form action="{{ url_for('berita_toggle_status', bid=b.id) }}" method="post"><button class="badge-status {{ 'badge-publikasi' if b.status=='Dipublikasikan' else 'badge-draft' }}" type="submit">{{ b.status }}</button></form></td><td><form action="{{ url_for('berita_hapus', bid=b.id) }}" method="post" onsubmit="return confirm('Hapus berita ini?');"><button class="icon-btn danger" type="submit"><i class="fa-solid fa-trash"></i></button></form></td></tr>
+    {% else %}<tr><td colspan="5" style="text-align:center;color:var(--muted);">Belum ada berita.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endif %}
+
+<div class="modal-overlay" id="modalKajian"><div class="modal-box"><h3>Tambah Materi Kajian</h3><form method="post" action="{{ url_for('kajian_tambah') }}" enctype="multipart/form-data"><div class="field"><label>Judul Kajian</label><input name="judul" required></div><div class="form-grid-2"><div class="field"><label>Tema / Sumber Hadis</label><input name="tema" placeholder="Contoh: Hadis tentang kejujuran"></div><div class="field"><label>Tanggal</label><input type="date" name="tanggal" required></div></div><div class="field"><label>Penulis / Ustadz</label><input name="penulis"></div><div class="field"><label>Gambar</label><input type="file" name="gambar" accept="image/jpeg,image/png,image/webp,image/gif"></div><div class="field"><label>Isi Kajian</label><textarea name="isi" rows="7" required></textarea></div><div class="field"><label>Status</label><select name="status"><option>Draft</option><option>Dipublikasikan</option></select></div><div class="modal-actions"><button type="button" class="btn-secondary" onclick="document.getElementById('modalKajian').classList.remove('open')">Batal</button><button class="btn-primary">Simpan</button></div></form></div></div>
+<div class="modal-overlay" id="modalBerita"><div class="modal-box"><h3>Tambah Berita</h3><form method="post" action="{{ url_for('berita_tambah') }}" enctype="multipart/form-data"><div class="field"><label>Judul Berita</label><input name="judul" required></div><div class="form-grid-2"><div class="field"><label>Tanggal</label><input type="date" name="tanggal" required></div><div class="field"><label>Penulis</label><input name="penulis"></div></div><div class="field"><label>Gambar</label><input type="file" name="gambar" accept="image/jpeg,image/png,image/webp,image/gif"></div><div class="field"><label>Isi Berita</label><textarea name="isi" rows="8" required></textarea></div><div class="field"><label>Status</label><select name="status"><option>Draft</option><option>Dipublikasikan</option></select></div><div class="modal-actions"><button type="button" class="btn-secondary" onclick="document.getElementById('modalBerita').classList.remove('open')">Batal</button><button class="btn-primary">Simpan</button></div></form></div></div>
+{% endblock %}

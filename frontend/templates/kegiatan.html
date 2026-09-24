@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ halaman }} - Sistem Informasi Masjid{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="section-title" style="margin-top:36px;">{{ halaman }}</h1>
+  <p class="section-sub">Informasi kegiatan dan agenda masjid untuk jamaah.</p>
+
+  {% if halaman == 'Kegiatan' %}
+  <div class="filter-row">
+    {% for k in ['Semua','Kajian','Ibadah','Sosial','Pendidikan','Lainnya'] %}
+    <a href="{{ url_for('kegiatan_publik', kategori=k) }}" class="filter-pill {{ 'active' if kategori_aktif==k }}">{{ k }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="kegiatan-grid">
+    {% for k in kegiatan %}
+    {% set tgl = k.tanggal.split('-') %}
+    {% set bulan_singkat = {'01':'JAN','02':'FEB','03':'MAR','04':'APR','05':'MEI','06':'JUN','07':'JUL','08':'AGU','09':'SEP','10':'OKT','11':'NOV','12':'DES'} %}
+    <div class="keg-card">
+      <div class="keg-thumb">
+        {% if k.image_filename %}<img class="keg-image" src="{{ url_for('static', filename='uploads/' + k.image_filename) }}" alt="{{ k.judul }}">{% endif %}
+        <div class="date-badge">
+          {{ bulan_singkat[tgl[1]] }}
+          <span class="num">{{ tgl[2] }}</span>
+        </div>
+      </div>
+      <div class="keg-body">
+        <h3>{{ k.judul }}</h3>
+        <div class="keg-meta"><i class="fa-regular fa-calendar"></i> {{ k.tanggal }}</div>
+        {% if k.ustadz %}<div class="keg-meta"><i class="fa-solid fa-user-tie"></i> {{ k.ustadz }}</div>{% endif %}
+        {% if k.waktu_mulai %}<div class="keg-meta"><i class="fa-regular fa-clock"></i> {{ k.waktu_mulai }}{% if k.waktu_selesai %} - {{ k.waktu_selesai }}{% endif %} WIB</div>{% endif %}
+        {% if k.lokasi %}<div class="keg-meta"><i class="fa-solid fa-location-dot"></i> {{ k.lokasi }}</div>{% endif %}
+        <span class="badge badge-{{ k.kategori.lower() }}">{{ k.kategori }}</span>
+      </div>
+    </div>
+    {% else %}
+    <p style="color:var(--muted);grid-column:1/-1;text-align:center;">Belum ada kegiatan pada kategori ini.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

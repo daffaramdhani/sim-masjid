@@ -1,0 +1,33 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Profil Masjid - Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-topbar">
+  <div>
+    <h1><i class="fa-solid fa-mosque admin-title-icon"></i> Profil Masjid</h1>
+    <div class="sub">Kelola nama, deskripsi, dan gambar profil yang tampil di halaman beranda.</div>
+  </div>
+</div>
+
+<form method="post" class="profile-form" enctype="multipart/form-data">
+  <section class="panel">
+    <h3><i class="fa-solid fa-building-mosque"></i> Informasi Masjid</h3>
+    <div class="field">
+      <label for="profil_nama">Nama Masjid</label>
+      <input id="profil_nama" type="text" name="profil_nama" value="{{ profil.nama }}" required>
+    </div>
+    <div class="field">
+      <label for="profil_deskripsi">Deskripsi Profil</label>
+      <textarea id="profil_deskripsi" name="profil_deskripsi" rows="7" required>{{ profil.deskripsi }}</textarea>
+    </div>
+    <div class="field">
+      <label for="profil_gambar">Gambar Profil</label>
+      <input id="profil_gambar" type="file" name="profil_gambar" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+      <small class="field-help">Pilih satu atau beberapa gambar sekaligus.</small>
+      {% if profil.gambar_list %}<div class="settings-image-previews">{% for gambar in profil.gambar_list %}<img class="settings-image-preview" src="{{ url_for('static', filename='uploads/' + gambar) }}" alt="Gambar profil {{ loop.index }}">{% endfor %}</div>{% endif %}
+    </div>
+    <div class="settings-actions">
+      <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Profil</button>
+    </div>
+  </section>
+</form>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Dashboard - Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-topbar">
+  <div>
+    <h1>Assalamu'alaikum, {{ session.admin_nama }}</h1>
+    <div class="sub">Berikut ringkasan aktivitas masjid hari ini.</div>
+  </div>
+  <div class="today">{{ today.strftime('%A, %d %B %Y') }}</div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="label">Total Jamaah</div>
+    <div class="value"><i class="fa-solid fa-users"></i> {{ "{:,}".format(total_jamaah).replace(",", ".") }} orang</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Kegiatan Mendatang</div>
+    <div class="value"><i class="fa-solid fa-calendar-days"></i> {{ kegiatan_mendatang }} kegiatan</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Pemasukan Bulan Ini</div>
+    <div class="value"><i class="fa-solid fa-arrow-up"></i> {{ pemasukan_bulan | rupiah }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Pengeluaran Bulan Ini</div>
+    <div class="value"><i class="fa-solid fa-arrow-down"></i> {{ pengeluaran_bulan | rupiah }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Saldo Kas</div>
+    <div class="value"><i class="fa-solid fa-wallet"></i> {{ saldo | rupiah }}</div>
+  </div>
+</div>
+
+<div class="admin-grid-2">
+  <div class="panel">
+    <h3>Pemasukan vs Pengeluaran</h3>
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background:#1B7A42;"></span>Pemasukan</span>
+      <span><span class="legend-dot" style="background:#C0463A;"></span>Pengeluaran</span>
+    </div>
+    <canvas id="dashChart" height="200"></canvas>
+  </div>
+  <div class="panel">
+    <h3>Transaksi Terbaru</h3>
+    {% for t in transaksi_terbaru %}
+    <div class="tx-item">
+      <div>
+        <div class="t-title">{{ t.kategori }}</div>
+        <div class="t-date">{{ t.tanggal }}</div>
+      </div>
+      <div class="tx-amount {{ 'pos' if t.jenis=='Pemasukan' else 'neg' }}">
+        {{ '+' if t.jenis=='Pemasukan' else '-' }} {{ t.jumlah | rupiah }}
+      </div>
+    </div>
+    {% else %}
+    <p style="color:var(--muted);font-size:.85rem;">Belum ada transaksi.</p>
+    {% endfor %}
+    <div style="text-align:right;margin-top:10px;">
+      <a href="{{ url_for('kas_admin') }}" class="link-more">Lihat semua transaksi ></a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('dashChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ labels | tojson }},
+    datasets: [
+      { label: 'Pemasukan', data: {{ masuk | tojson }}, backgroundColor: '#1B7A42', borderRadius: 4, maxBarThickness: 20 },
+      { label: 'Pengeluaran', data: {{ keluar | tojson }}, backgroundColor: '#C0463A', borderRadius: 4, maxBarThickness: 20 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { grid: { color: '#EFE9D8' }, ticks: { callback: (v) => (v/1000000) + ' Jt' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

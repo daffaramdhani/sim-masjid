@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Beranda - Sistem Informasi Masjid{% endblock %}
+{% block content %}
+
+<div class="container">
+  <section class="hero" style="padding:0;">
+    <img src="https://images.unsplash.com/photo-1591277358566-71c342ba28ee?q=80&w=1400&auto=format&fit=crop" alt="Masjid">
+    <div class="hero-content">
+      <h1>Sistem Informasi<br>Masjid</h1>
+      <p>Media informasi dan transparansi kegiatan serta keuangan masjid untuk kemaslahatan umat.</p>
+      <a href="{{ url_for('kegiatan_publik') }}" class="btn-gold">Selengkapnya <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </section>
+</div>
+
+<div class="grid-2col">
+  <div class="card">
+    <div class="section-head-row" style="margin-bottom:14px;">
+      <h2 style="font-size:1.05rem;"><i class="fa-regular fa-clock" style="color:var(--gold);margin-right:8px;"></i>Waktu Shalat Hari Ini</h2>
+      <span style="font-size:.8rem;color:var(--muted);">{{ today.strftime('%A, %d %B %Y') }}</span>
+    </div>
+    <div class="prayer-times">
+      {% for nama, waktu in waktu_shalat.items() %}
+      <div class="prayer-box">
+        <i class="fa-solid fa-mosque"></i>
+        <div class="name">{{ nama }}</div>
+        <div class="time">{{ waktu }}</div>
+        <div class="imam">{{ imam_shalat[nama] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-head-row" style="margin-bottom:8px;">
+      <h2 style="font-size:1.05rem;">Kegiatan Mendatang</h2>
+      <a href="{{ url_for('kegiatan_publik') }}" class="link-more">Lihat semua ></a>
+    </div>
+    {% for k in kegiatan %}
+    <div class="upcoming-item">
+      <div class="upcoming-icon"><i class="fa-regular fa-calendar"></i></div>
+      <div>
+        <div class="u-title">{{ k.judul }}</div>
+        <div class="u-sub">{{ k.tanggal }} • {{ k.waktu_mulai }}{% if k.waktu_selesai %} - {{ k.waktu_selesai }}{% endif %}</div>
+        {% if k.ustadz %}<div class="u-sub"><i class="fa-solid fa-user-tie"></i> {{ k.ustadz }}</div>{% endif %}
+        <div class="u-sub">{{ k.lokasi }}</div>
+      </div>
+    </div>
+    {% else %}
+    <p style="color:var(--muted);font-size:.88rem;">Belum ada kegiatan mendatang.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="container friday-schedule-wrap">
+  <div class="card friday-schedule">
+    <div class="section-head-row" style="margin-bottom:16px;">
+      <div>
+        <h2 style="font-size:1.05rem;"><i class="fa-solid fa-mosque" style="color:var(--gold);margin-right:8px;"></i>Jadwal Shalat Jumat</h2>
+        <span class="schedule-note">Setiap hari Jumat</span>
+      </div>
+      <div class="friday-time"><i class="fa-regular fa-clock"></i>{{ jadwal_jumat.waktu }}</div>
+    </div>
+    <div class="friday-roles">
+      <div class="friday-role"><span>Imam</span><strong>{{ jadwal_jumat.imam }}</strong></div>
+      <div class="friday-role"><span>Khatib</span><strong>{{ jadwal_jumat.khotib }}</strong></div>
+      <div class="friday-role"><span>Muadzin</span><strong>{{ jadwal_jumat.muadzin }}</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="quote-bar">
+  "Sesungguhnya memakmurkan masjid adalah di antara tanda keimanan kepada Allah." (HR. Tirmidzi)
+</div>
+
+<section id="profil" class="container">
+  <h2 class="section-title profile-heading"><i class="fa-solid fa-mosque"></i>{{ profil.nama }}</h2>
+  {% if profil.gambar_list %}
+  <div class="profile-gallery">{% for gambar in profil.gambar_list %}<img class="profile-image" src="{{ url_for('static', filename='uploads/' + gambar) }}" alt="{{ profil.nama }} - gambar {{ loop.index }}">{% endfor %}</div>
+  {% endif %}
+  <p class="section-sub" style="max-width:680px;margin-left:auto;margin-right:auto;">
+    {{ profil.deskripsi }}
+  </p>
+</section>
+
+<section id="pengumuman" class="container">
+  <div class="section-head-row">
+    <h2 style="font-size:1.4rem;">Pengumuman</h2>
+    <a href="{{ url_for('pengumuman_publik') }}" class="link-more">Lihat semua ></a>
+  </div>
+  <div class="card">
+    {% if pengumuman %}
+      {% for p in pengumuman %}
+      <div class="announcement-item">
+        <div class="announcement-icon"><i class="fa-solid fa-bullhorn"></i></div>
+        <div><strong>{{ p.judul }}</strong><span>{{ p.tanggal }}</span><p>{{ p.isi or 'Tidak ada isi pengumuman.' }}</p></div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:var(--muted);font-size:.9rem;">Belum ada pengumuman yang dipublikasikan.</p>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

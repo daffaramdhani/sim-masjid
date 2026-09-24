@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Kajian - Sistem Informasi Masjid{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="section-title" style="margin-top:36px;">Kajian</h1>
+  <p class="section-sub">Materi kajian hadis dan ilmu keislaman untuk jamaah.</p>
+  <div class="article-grid">
+    {% for k in kajian %}
+    <article class="article-card">
+      {% if k.image_filename %}<img class="article-image" src="{{ url_for('static', filename='uploads/' + k.image_filename) }}" alt="{{ k.judul }}">{% endif %}
+      <div class="article-meta"><i class="fa-regular fa-calendar"></i> {{ k.tanggal }}{% if k.penulis %} &middot; {{ k.penulis }}{% endif %}</div>
+      <h2>{{ k.judul }}</h2>
+      {% if k.tema %}<div class="article-topic">{{ k.tema }}</div>{% endif %}
+      <p>{{ k.isi }}</p>
+    </article>
+    {% else %}
+    <p class="empty-state">Belum ada materi kajian yang dipublikasikan.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Kegiatan & Pengumuman - Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-topbar">
+  <div>
+    <h1>Kegiatan & Pengumuman</h1>
+    <div class="sub">Kelola kegiatan masjid yang akan dipublikasikan.</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <a href="{{ url_for('kegiatan_admin', tab='kegiatan') }}" class="tab-link {{ 'active' if tab=='kegiatan' }}">Kegiatan</a>
+  <a href="{{ url_for('kegiatan_admin', tab='pengumuman') }}" class="tab-link {{ 'active' if tab=='pengumuman' }}">Pengumuman</a>
+</div>
+
+{% if tab == 'kegiatan' %}
+<div class="panel">
+  <div class="toolbar">
+    <h3 style="margin:0;">Daftar Kegiatan</h3>
+    <button class="btn-primary" onclick="document.getElementById('modalKegiatan').classList.add('open')"><i class="fa-solid fa-plus"></i> Tambah Kegiatan</button>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>No</th><th>Judul Kegiatan</th><th>Ustadz</th><th>Tanggal</th><th>Waktu</th><th>Lokasi</th><th>Kategori</th><th>Status</th><th>Aksi</th></tr></thead>
+      <tbody>
+        {% for k in kegiatan %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ k.judul }}</td>
+          <td>{{ k.ustadz or '-' }}</td>
+          <td>{{ k.tanggal }}</td>
+          <td>{{ k.waktu_mulai }}{% if k.waktu_selesai %} - {{ k.waktu_selesai }}{% endif %}</td>
+          <td>{{ k.lokasi }}</td>
+          <td><span class="badge badge-{{ k.kategori.lower() }}">{{ k.kategori }}</span></td>
+          <td>
+            <form action="{{ url_for('kegiatan_toggle_status', kid=k.id) }}" method="POST" style="display:inline;">
+              <button type="submit" class="badge-status" style="border:none;cursor:pointer;" class="badge {{ 'badge-publikasi' if k.status=='Dipublikasikan' else 'badge-draft' }}">{{ k.status }}</button>
+            </form>
+          </td>
+          <td>
+            <button type="button" class="icon-btn edit" title="Edit kegiatan" onclick="document.getElementById('modalEditKegiatan{{ k.id }}').classList.add('open')"><i class="fa-solid fa-pen"></i></button>
+            <form action="{{ url_for('kegiatan_hapus', kid=k.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Hapus kegiatan ini?');">
+              <button class="icon-btn danger" type="submit"><i class="fa-solid fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" style="text-align:center;color:var(--muted);">Belum ada kegiatan.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="panel">
+  <div class="toolbar">
+    <h3 style="margin:0;">Daftar Pengumuman</h3>
+    <button class="btn-primary" onclick="document.getElementById('modalPengumuman').classList.add('open')"><i class="fa-solid fa-plus"></i> Buat Pengumuman</button>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>No</th><th>Judul Pengumuman</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr></thead>
+      <tbody>
+        {% for p in pengumuman %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ p.judul }}</td>
+          <td>{{ p.tanggal }}</td>
+          <td><span class="badge badge-{{ 'publikasi' if p.status=='Dipublikasikan' else ('arsip' if p.status=='Arsip' else 'draft') }}">{{ p.status }}</span></td>
+          <td>
+            <button type="button" class="icon-btn edit" title="Edit pengumuman" onclick="document.getElementById('modalEditPengumuman{{ p.id }}').classList.add('open')"><i class="fa-solid fa-pen"></i></button>
+            <form action="{{ url_for('pengumuman_hapus', pid=p.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Hapus pengumuman ini?');">
+              <button class="icon-btn danger" type="submit"><i class="fa-solid fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" style="text-align:center;color:var(--muted);">Belum ada pengumuman.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% for p in pengumuman %}
+<div class="modal-overlay" id="modalEditPengumuman{{ p.id }}">
+  <div class="modal-box">
+    <h3>Edit Pengumuman</h3>
+    <form method="POST" action="{{ url_for('pengumuman_edit', pid=p.id) }}">
+      <div class="field"><label>Judul Pengumuman</label><input type="text" name="judul" value="{{ p.judul }}" required></div>
+      <div class="field"><label>Tanggal</label><input type="date" name="tanggal" value="{{ p.tanggal }}" required></div>
+      <div class="field"><label>Isi Pengumuman</label><textarea name="isi" rows="5">{{ p.isi or '' }}</textarea></div>
+      <div class="field"><label>Status</label><select name="status"><option value="Draft" {{ 'selected' if p.status == 'Draft' }}>Draft</option><option value="Dipublikasikan" {{ 'selected' if p.status == 'Dipublikasikan' }}>Dipublikasikan</option><option value="Arsip" {{ 'selected' if p.status == 'Arsip' }}>Arsip</option></select></div>
+      <div class="modal-actions"><button type="button" class="btn-secondary" onclick="document.getElementById('modalEditPengumuman{{ p.id }}').classList.remove('open')">Batal</button><button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button></div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+{% for k in kegiatan %}
+<div class="modal-overlay" id="modalEditKegiatan{{ k.id }}">
+  <div class="modal-box">
+    <h3>Edit Kegiatan</h3>
+    <form method="POST" action="{{ url_for('kegiatan_edit', kid=k.id) }}" enctype="multipart/form-data">
+      <div class="field"><label>Judul Kegiatan</label><input type="text" name="judul" value="{{ k.judul }}" required></div>
+      <div class="form-grid-2">
+        <div class="field"><label>Tanggal</label><input type="date" name="tanggal" value="{{ k.tanggal }}" required></div>
+        <div class="field"><label>Lokasi</label><input type="text" name="lokasi" value="{{ k.lokasi or '' }}"></div>
+        <div class="field"><label>Nama Ustadz</label><input type="text" name="ustadz" value="{{ k.ustadz or '' }}"></div>
+        <div class="field"><label>Waktu Mulai</label><input type="time" name="waktu_mulai" value="{{ k.waktu_mulai or '' }}"></div>
+        <div class="field"><label>Waktu Selesai</label><input type="time" name="waktu_selesai" value="{{ k.waktu_selesai or '' }}"></div>
+      </div>
+      <div class="field"><label>Kategori</label><select name="kategori" required>{% for kategori in ['Kajian','Ibadah','Sosial','Pendidikan','Lainnya'] %}<option value="{{ kategori }}" {{ 'selected' if k.kategori == kategori }}>{{ kategori }}</option>{% endfor %}</select></div>
+      <div class="field"><label>Deskripsi</label><textarea name="deskripsi" rows="3">{{ k.deskripsi or '' }}</textarea></div>
+      <div class="field"><label>Ganti Gambar</label><input type="file" name="gambar" accept="image/jpeg,image/png,image/webp,image/gif"><small class="field-help">Kosongkan jika gambar lama tetap digunakan.</small></div>
+      <div class="field"><label>Status</label><select name="status"><option value="Draft" {{ 'selected' if k.status == 'Draft' }}>Draft</option><option value="Dipublikasikan" {{ 'selected' if k.status == 'Dipublikasikan' }}>Dipublikasikan</option></select></div>
+      <div class="modal-actions"><button type="button" class="btn-secondary" onclick="document.getElementById('modalEditKegiatan{{ k.id }}').classList.remove('open')">Batal</button><button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan</button></div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Modal Tambah Kegiatan -->
+<div class="modal-overlay" id="modalKegiatan">
+  <div class="modal-box">
+    <h3>Tambah Kegiatan</h3>
+    <form method="POST" action="{{ url_for('kegiatan_tambah') }}" enctype="multipart/form-data">
+      <div class="field"><label>Judul Kegiatan</label><input type="text" name="judul" required></div>
+      <div class="form-grid-2">
+        <div class="field"><label>Tanggal</label><input type="date" name="tanggal" required></div>
+        <div class="field"><label>Lokasi</label><input type="text" name="lokasi" placeholder="Masjid Nurul Hasanah"></div>
+        <div class="field"><label>Nama Ustadz</label><input type="text" name="ustadz" placeholder="Ustadz Ahmad Fauzi"></div>
+        <div class="field"><label>Waktu Mulai</label><input type="time" name="waktu_mulai"></div>
+        <div class="field"><label>Waktu Selesai</label><input type="time" name="waktu_selesai"></div>
+      </div>
+      <div class="field"><label>Kategori</label>
+        <select name="kategori" required>
+          <option>Kajian</option><option>Ibadah</option><option>Sosial</option><option>Pendidikan</option><option>Lainnya</option>
+        </select>
+      </div>
+      <div class="field"><label>Deskripsi</label><textarea name="deskripsi" rows="3"></textarea></div>
+      <div class="field"><label>Gambar Kegiatan</label><input type="file" name="gambar" accept="image/jpeg,image/png,image/webp,image/gif"><small class="field-help">Format JPG, JPEG, PNG, WEBP, atau GIF.</small></div>
+      <div class="field"><label>Status</label>
+        <select name="status"><option value="Draft">Draft</option><option value="Dipublikasikan">Dipublikasikan</option></select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="document.getElementById('modalKegiatan').classList.remove('open')">Batal</button>
+        <button type="submit" class="btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Tambah Pengumuman -->
+<div class="modal-overlay" id="modalPengumuman">
+  <div class="modal-box">
+    <h3>Buat Pengumuman</h3>
+    <form method="POST" action="{{ url_for('pengumuman_tambah') }}">
+      <div class="field"><label>Judul Pengumuman</label><input type="text" name="judul" required></div>
+      <div class="field"><label>Tanggal</label><input type="date" name="tanggal" required></div>
+      <div class="field"><label>Isi Pengumuman</label><textarea name="isi" rows="4"></textarea></div>
+      <div class="field"><label>Status</label>
+        <select name="status"><option value="Draft">Draft</option><option value="Dipublikasikan">Dipublikasikan</option></select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="document.getElementById('modalPengumuman').classList.remove('open')">Batal</button>
+        <button type="submit" class="btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
