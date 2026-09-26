@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Struktur Masjid - Sistem Informasi Masjid Nurul Hasanah{% endblock %}
+{% block content %}
+<section class="container structure-page">
+  <header class="structure-page-head">
+    <h1>Struktur Masjid</h1>
+    <p>Daftar pengurus Masjid Nurul Hasanah.</p>
+  </header>
+  <div class="structure-org-chart">
+    {% if struktur_pohon %}
+    {% macro render_node(anggota) %}
+    <li>
+      <article class="structure-chart-card">
+        <span>{{ anggota.jabatan }}</span>
+        <strong>{{ anggota.nama or 'Belum diatur' }}</strong>
+      </article>
+      {% if anggota.children %}
+      <ul>
+        {% for anak in anggota.children %}{{ render_node(anak) }}{% endfor %}
+      </ul>
+      {% endif %}
+    </li>
+    {% endmacro %}
+    <ul>{% for anggota in struktur_pohon %}{{ render_node(anggota) }}{% endfor %}</ul>
+    {% else %}
+    <p>Struktur pengurus belum diatur.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

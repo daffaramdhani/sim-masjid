@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Beranda - Sistem Informasi Masjid{% endblock %}
+{% block title %}Beranda - Sistem Informasi Masjid Nurul Hasanah{% endblock %}
 {% block content %}
 
 <div class="container">
   <section class="hero" style="padding:0;">
-    <img src="https://images.unsplash.com/photo-1591277358566-71c342ba28ee?q=80&w=1400&auto=format&fit=crop" alt="Masjid">
+    <img src="{{ url_for('static', filename='img/masjidhijau.jpg') }}" alt="Masjid">
     <div class="hero-content">
-      <h1>Sistem Informasi<br>Masjid</h1>
+      <h1>Sistem Informasi<br>Masjid Nurul Hasanah</h1>
       <p>Media informasi dan transparansi kegiatan serta keuangan masjid untuk kemaslahatan umat.</p>
       <a href="{{ url_for('kegiatan_publik') }}" class="btn-gold">Selengkapnya <i class="fa-solid fa-arrow-right"></i></a>
     </div>

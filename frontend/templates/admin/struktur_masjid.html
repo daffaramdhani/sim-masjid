@@ -1,0 +1,89 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Struktur Masjid - Admin{% endblock %}
+{% block admin_content %}
+<div class="admin-topbar">
+  <div>
+    <h1>Struktur Masjid</h1>
+    <div class="sub">Atur jabatan, nama pengurus, dan garis koordinasi pada bagan publik.</div>
+  </div>
+</div>
+
+<form method="post" class="panel structure-admin-panel">
+  <div id="strukturMasjid" class="structure-editor">
+    {% for anggota in struktur_pengurus %}
+    <div class="structure-editor-row">
+      <input type="hidden" name="struktur_id[]" value="{{ anggota.id }}">
+      <div class="field">
+        <label>Jabatan</label>
+        <input type="text" name="struktur_jabatan[]" value="{{ anggota.jabatan }}" placeholder="Contoh: Ketua">
+      </div>
+      <div class="field">
+        <label>Nama Pengurus</label>
+        <input type="text" name="struktur_nama[]" value="{{ anggota.nama }}" placeholder="Masukkan nama">
+      </div>
+      <div class="field">
+        <label>Atasan Langsung</label>
+        <select name="struktur_atasan[]">
+          <option value="">Pimpinan tertinggi</option>
+          {% for calon in struktur_pengurus if calon.id != anggota.id %}
+          <option value="{{ calon.id }}" {{ 'selected' if calon.id == anggota.atasan }}>{{ calon.jabatan }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="button" class="icon-btn danger" aria-label="Hapus jabatan" title="Hapus jabatan" onclick="hapusStrukturMasjid(this)"><i class="fa-solid fa-trash"></i></button>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="structure-admin-actions">
+    <button type="button" class="btn-secondary" onclick="tambahStrukturMasjid()"><i class="fa-solid fa-plus"></i> Tambah Jabatan</button>
+    <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Simpan Struktur</button>
+  </div>
+</form>
+<script>
+function tambahStrukturMasjid() {
+  const row = document.createElement('div');
+  row.className = 'structure-editor-row';
+  row.innerHTML = `<input type="hidden" name="struktur_id[]">
+    <div class="field"><label>Jabatan</label><input type="text" name="struktur_jabatan[]" placeholder="Contoh: Koordinator"></div>
+    <div class="field"><label>Nama Pengurus</label><input type="text" name="struktur_nama[]" placeholder="Masukkan nama"></div>
+    <div class="field"><label>Atasan Langsung</label><select name="struktur_atasan[]"><option value="">Pimpinan tertinggi</option></select></div>
+    <button type="button" class="icon-btn danger" aria-label="Hapus jabatan" title="Hapus jabatan" onclick="hapusStrukturMasjid(this)"><i class="fa-solid fa-trash"></i></button>`;
+  row.querySelector('[name="struktur_id[]"]').value = `anggota-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  document.getElementById('strukturMasjid').appendChild(row);
+  perbaruiAtasan();
+}
+
+function hapusStrukturMasjid(button) {
+  button.closest('.structure-editor-row').remove();
+  perbaruiAtasan();
+}
+
+function perbaruiAtasan() {
+  const rows = [...document.querySelectorAll('#strukturMasjid .structure-editor-row')];
+  const anggota = rows.map(row => ({
+    id: row.querySelector('[name="struktur_id[]"]').value,
+    jabatan: row.querySelector('[name="struktur_jabatan[]"]').value.trim()
+  }));
+
+  rows.forEach(row => {
+    const anggotaId = row.querySelector('[name="struktur_id[]"]').value;
+    const select = row.querySelector('[name="struktur_atasan[]"]');
+    const pilihan = select.value;
+    select.innerHTML = '<option value="">Pimpinan tertinggi</option>';
+    anggota.filter(item => item.id !== anggotaId).forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.jabatan || 'Jabatan baru';
+      select.appendChild(option);
+    });
+    if (anggota.some(item => item.id === pilihan && item.id !== anggotaId)) {
+      select.value = pilihan;
+    }
+  });
+}
+
+document.getElementById('strukturMasjid').addEventListener('input', event => {
+  if (event.target.name === 'struktur_jabatan[]') perbaruiAtasan();
+});
+</script>
+{% endblock %}

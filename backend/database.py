@@ -143,7 +143,7 @@ def seed(conn):
     import random
     nama_depan = ["Agus", "Budi", "Citra", "Dian", "Eka", "Fajar", "Gita", "Hadi", "Indah", "Joko"]
     nama_belakang = ["Santoso", "Wijaya", "Pratama", "Lestari", "Nugroho", "Saputra", "Handayani", "Ramadhan"]
-    for i in range(1240):
+    for i in range(12):
         nama = f"{random.choice(nama_depan)} {random.choice(nama_belakang)}"
         jk = random.choice(["Laki-laki", "Perempuan"])
         no_hp = f"08{random.randint(10,19)}-{random.randint(1000,9999)}-{random.randint(1000,9999)}"

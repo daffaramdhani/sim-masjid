@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}Admin - Sistem Informasi Masjid{% endblock %}</title>
+<title>{% block title %}Admin - Sistem Informasi Masjid Nurul Hasanah{% endblock %}</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -14,7 +14,7 @@
     <div class="sidebar-head">
       <div class="brand">
         <span class="brand-icon"><img src="{{ url_for('static', filename='img/masjid.png') }}" alt="Logo masjid"></span>
-        <span class="brand-text">Sistem Informasi Masjid</span>
+        <span class="brand-text">Sistem Informasi Masjid Nurul Hasanah</span>
       </div>
       <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-label="Buka/Tutup sidebar">
         <i class="fa-solid fa-chevron-left"></i>
@@ -29,6 +29,8 @@
       <a href="{{ url_for('kas_admin') }}" class="{{ 'active' if request.endpoint=='kas_admin' }}" title="Kas Masjid"><i class="fa-solid fa-sack-dollar"></i><span class="nav-text">Kas Masjid</span></a>
       <a href="{{ url_for('laporan_admin') }}" class="{{ 'active' if request.endpoint=='laporan_admin' }}" title="Laporan & Publikasi"><i class="fa-solid fa-chart-pie"></i><span class="nav-text">Laporan &amp; Publikasi</span></a>
       <a href="{{ url_for('pengaturan_admin') }}" class="{{ 'active' if request.endpoint=='pengaturan_admin' }}" title="Pengaturan"><i class="fa-solid fa-sliders"></i><span class="nav-text">Pengaturan</span></a>
+      <a href="{{ url_for('struktur_masjid_admin') }}" class="{{ 'active' if request.endpoint=='struktur_masjid_admin' }}" title="Struktur Masjid"><i class="fa-solid fa-people-group"></i><span class="nav-text">Struktur Masjid</span></a>
+      <a href="{{ url_for('sarana_pemeliharaan_admin') }}" class="{{ 'active' if request.endpoint=='sarana_pemeliharaan_admin' }}" title="Sarana &amp; Pemeliharaan"><i class="fa-solid fa-screwdriver-wrench"></i><span class="nav-text">Sarana &amp; Pemeliharaan</span></a>
       <a href="{{ url_for('beranda') }}" title="Pengunjung"><i class="fa-solid fa-globe"></i><span class="nav-text">Pengunjung</span></a>
       <a href="#" title="Pengguna"><i class="fa-solid fa-user-gear"></i><span class="nav-text">Pengguna</span></a>
     </nav>

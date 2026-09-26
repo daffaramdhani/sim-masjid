@@ -41,6 +41,13 @@ JADWAL_JUMAT_CONTOH = {
     "muadzin": "Bpk. Dedi Kurniawan",
 }
 
+STRUKTUR_MASJID_DEFAULT = [
+    {"id": "ketua", "jabatan": "Ketua", "nama": "", "atasan": ""},
+    {"id": "wakil-ketua", "jabatan": "Wakil Ketua", "nama": "", "atasan": "ketua"},
+    {"id": "sekretaris", "jabatan": "Sekretaris", "nama": "", "atasan": "ketua"},
+    {"id": "bendahara", "jabatan": "Bendahara", "nama": "", "atasan": "ketua"},
+]
+
 PENGATURAN_JADWAL_DEFAULT = {
     "shalat_imsyak": "04:19",
     "imam_imsyak": "Ust. Ahmad Fauzi",
@@ -112,6 +119,110 @@ def get_jadwal_pengaturan(conn):
     }
 
 
+def get_struktur_masjid(conn):
+    row = conn.execute(
+        "SELECT nilai FROM pengaturan WHERE kunci='struktur_masjid'"
+    ).fetchone()
+    if not row:
+        return [anggota.copy() for anggota in STRUKTUR_MASJID_DEFAULT]
+
+    try:
+        struktur = json.loads(row["nilai"])
+    except (TypeError, json.JSONDecodeError):
+        return [anggota.copy() for anggota in STRUKTUR_MASJID_DEFAULT]
+
+    if not isinstance(struktur, list):
+        return [anggota.copy() for anggota in STRUKTUR_MASJID_DEFAULT]
+    anggota_list = []
+    used_ids = set()
+    for index, item in enumerate(struktur):
+        if not isinstance(item, dict):
+            continue
+        jabatan = str(item.get("jabatan", "")).strip()
+        if not jabatan:
+            continue
+        anggota_id = str(item.get("id", "")).strip() or f"anggota-{index + 1}"
+        if anggota_id in used_ids:
+            anggota_id = f"{anggota_id}-{index + 1}"
+        used_ids.add(anggota_id)
+        anggota_list.append({
+            "id": anggota_id,
+            "jabatan": jabatan,
+            "nama": str(item.get("nama", "")).strip(),
+            "atasan": str(item.get("atasan", "")).strip(),
+        })
+
+    anggota_by_id = {anggota["id"]: anggota for anggota in anggota_list}
+    for anggota in anggota_list:
+        if anggota["atasan"] not in anggota_by_id or anggota["atasan"] == anggota["id"]:
+            anggota["atasan"] = ""
+
+    for anggota in anggota_list:
+        current = anggota
+        visited = set()
+        while current["atasan"]:
+            if current["id"] in visited:
+                anggota["atasan"] = ""
+                break
+            visited.add(current["id"])
+            current = anggota_by_id.get(current["atasan"], {})
+            if not current:
+                break
+    return anggota_list
+
+
+def build_struktur_pohon(anggota_list):
+    nodes = {
+        anggota["id"]: {**anggota, "children": []}
+        for anggota in anggota_list
+    }
+    roots = []
+    for anggota in anggota_list:
+        node = nodes[anggota["id"]]
+        parent = nodes.get(anggota["atasan"])
+        if parent:
+            parent["children"].append(node)
+        else:
+            roots.append(node)
+    return roots
+
+
+def struktur_masjid_ada_siklus(anggota_list):
+    parents = {anggota["id"]: anggota["atasan"] for anggota in anggota_list}
+    for anggota_id in parents:
+        visited = set()
+        current = anggota_id
+        while current:
+            if current in visited:
+                return True
+            visited.add(current)
+            current = parents.get(current, "")
+    return False
+
+
+def get_data_divisi_sarana(conn):
+    row = conn.execute(
+        "SELECT nilai FROM pengaturan WHERE kunci='data_divisi_sarana'"
+    ).fetchone()
+    if not row:
+        return {"sarana_pemeliharaan": [], "purnomo": []}
+
+    try:
+        data = json.loads(row["nilai"])
+    except (TypeError, json.JSONDecodeError):
+        return {"sarana_pemeliharaan": [], "purnomo": []}
+
+    result = {}
+    for key in ("sarana_pemeliharaan", "purnomo"):
+        entries = data.get(key, []) if isinstance(data, dict) else []
+        result[key] = [
+            {"kegiatan": str(item.get("kegiatan", "")).strip()}
+            for item in entries
+            if isinstance(item, dict) and str(item.get("kegiatan", "")).strip()
+        ] if isinstance(entries, list) else []
+    return result
+
+
 # ---------- Helpers ----------
 
 def rupiah(value):
@@ -142,7 +253,10 @@ def save_uploaded_images(files):
 
 @app.context_processor
 def inject_now():
-    return {"now": datetime.now}
+    conn = get_db()
+    struktur_masjid = get_struktur_masjid(conn)
+    conn.close()
+    return {"now": datetime.now, "struktur_masjid": struktur_masjid}
 
 
 def login_required(f):
@@ -234,6 +348,22 @@ def kegiatan_publik():
         ).fetchall()
     conn.close()
     return render_template("kegiatan.html", kegiatan=rows, kategori_aktif=kategori, halaman="Kegiatan")
+
+
+@app.route("/struktur-masjid")
+def struktur_masjid_publik():
+    conn = get_db()
+    struktur_pohon = build_struktur_pohon(get_struktur_masjid(conn))
+    conn.close()
+    return render_template("struktur_masjid.html", struktur_pohon=struktur_pohon)
+
+
+@app.route("/sarana-pemeliharaan")
+def sarana_pemeliharaan_publik():
+    conn = get_db()
+    data_divisi = get_data_divisi_sarana(conn)
+    conn.close()
+    return render_template("sarana_pemeliharaan.html", data_divisi=data_divisi)
 
 
 @app.route("/kajian")
@@ -339,19 +469,7 @@ def dashboard():
     ).fetchone()["t"]
     _, _, saldo = get_ringkasan_kas(conn, hanya_dipublikasikan=False)
 
-    # fallback ke data Mei 2025 jika bulan berjalan belum ada transaksi (biar chart selalu ada isi)
     labels, masuk, keluar = get_chart_mingguan(conn, bulan, tahun, hanya_dipublikasikan=False)
-    if sum(masuk) + sum(keluar) == 0:
-        bulan, tahun = 5, 2025
-        labels, masuk, keluar = get_chart_mingguan(conn, bulan, tahun, hanya_dipublikasikan=False)
-        pemasukan_bulan = conn.execute(
-            "SELECT COALESCE(SUM(jumlah),0) t FROM transaksi_kas WHERE jenis='Pemasukan' AND strftime('%m',tanggal)=? AND strftime('%Y',tanggal)=?",
-            (f"{bulan:02d}", str(tahun)),
-        ).fetchone()["t"]
-        pengeluaran_bulan = conn.execute(
-            "SELECT COALESCE(SUM(jumlah),0) t FROM transaksi_kas WHERE jenis='Pengeluaran' AND strftime('%m',tanggal)=? AND strftime('%Y',tanggal)=?",
-            (f"{bulan:02d}", str(tahun)),
-        ).fetchone()["t"]
 
     transaksi_terbaru = conn.execute(
         "SELECT * FROM transaksi_kas ORDER BY id DESC LIMIT 5"
@@ -395,6 +513,84 @@ def pengaturan_admin():
     jadwal = get_jadwal_pengaturan(conn)
     conn.close()
     return render_template("admin/pengaturan.html", jadwal=jadwal)
+
+
+@app.route("/admin/struktur-masjid", methods=["GET", "POST"])
+@login_required
+def struktur_masjid_admin():
+    if request.method == "POST":
+        id_list = request.form.getlist("struktur_id[]")
+        jabatan_list = request.form.getlist("struktur_jabatan[]")
+        nama_list = request.form.getlist("struktur_nama[]")
+        atasan_list = request.form.getlist("struktur_atasan[]")
+        struktur = [
+            {"id": anggota_id.strip() or f"anggota-{index + 1}",
+             "jabatan": jabatan.strip(), "nama": nama.strip(), "atasan": atasan.strip()}
+            for index, (anggota_id, jabatan, nama, atasan) in enumerate(
+                zip(id_list, jabatan_list, nama_list, atasan_list)
+            )
+            if jabatan.strip()
+        ]
+        valid_ids = {anggota["id"] for anggota in struktur}
+        for anggota in struktur:
+            if anggota["atasan"] not in valid_ids or anggota["atasan"] == anggota["id"]:
+                anggota["atasan"] = ""
+        if struktur_masjid_ada_siklus(struktur):
+            flash("Susunan atasan tidak boleh membentuk lingkaran.", "error")
+            return render_template(
+                "admin/struktur_masjid.html", struktur_pengurus=struktur
+            ), 400
+
+        conn = get_db()
+        conn.execute(
+            "INSERT INTO pengaturan (kunci, nilai) VALUES (?, ?) "
+            "ON CONFLICT(kunci) DO UPDATE SET nilai=excluded.nilai",
+            ("struktur_masjid", json.dumps(struktur, ensure_ascii=False)),
+        )
+        conn.commit()
+        conn.close()
+        flash("Struktur masjid berhasil diperbarui.", "success")
+        return redirect(url_for("struktur_masjid_admin"))
+
+    conn = get_db()
+    struktur_pengurus = get_struktur_masjid(conn)
+    conn.close()
+    return render_template(
+        "admin/struktur_masjid.html", struktur_pengurus=struktur_pengurus
+    )
+
+
+@app.route("/admin/sarana-pemeliharaan", methods=["GET", "POST"])
+@login_required
+def sarana_pemeliharaan_admin():
+    if request.method == "POST":
+        def read_divisi(prefix):
+            activities = request.form.getlist(f"{prefix}_kegiatan[]")
+            return [
+                {"kegiatan": kegiatan.strip()}
+                for kegiatan in activities
+                if kegiatan.strip()
+            ]
+
+        data = {
+            "sarana_pemeliharaan": read_divisi("sarana"),
+            "purnomo": read_divisi("purnomo"),
+        }
+        conn = get_db()
+        conn.execute(
+            "INSERT INTO pengaturan (kunci, nilai) VALUES (?, ?) "
+            "ON CONFLICT(kunci) DO UPDATE SET nilai=excluded.nilai",
+            ("data_divisi_sarana", json.dumps(data, ensure_ascii=False)),
+        )
+        conn.commit()
+        conn.close()
+        flash("Data divisi sarana dan pemeliharaan berhasil disimpan.", "success")
+        return redirect(url_for("sarana_pemeliharaan_admin"))
+
+    conn = get_db()
+    data_divisi = get_data_divisi_sarana(conn)
+    conn.close()
+    return render_template("admin/sarana_pemeliharaan.html", data_divisi=data_divisi)
 
 
 @app.route("/admin/profil", methods=["GET", "POST"])
@@ -530,7 +726,7 @@ def berita_hapus(bid):
 def jamaah_list():
     q = request.args.get("q", "").strip()
     page = max(int(request.args.get("page", 1)), 1)
-    per_page = 5
+    per_page = 20
     conn = get_db()
     if q:
         like = f"%{q}%"
@@ -550,7 +746,8 @@ def jamaah_list():
     conn.close()
     total_pages = max((total + per_page - 1) // per_page, 1)
     return render_template(
-        "admin/jamaah.html", jamaah=rows, q=q, page=page, total_pages=total_pages, total=total
+        "admin/jamaah.html", jamaah=rows, q=q, page=page, total_pages=total_pages,
+        total=total, per_page=per_page,
     )
 
 
@@ -760,7 +957,7 @@ def kas_tambah():
     conn.commit()
     conn.close()
     flash("Transaksi kas berhasil disimpan.", "success")
-    return redirect(url_for("kas_admin"))
+    return redirect(url_for("dashboard"))
 
 
 @app.route("/admin/kas/<int:tid>/hapus", methods=["POST"])
@@ -792,7 +989,7 @@ def laporan_admin():
 
     pemasukan_bulan = total_by("Pemasukan", False)
     pengeluaran_bulan = total_by("Pengeluaran", False)
-    saldo_awal = 35000000  # nilai contoh statis sesuai desain
+    saldo_awal = 0
     saldo_akhir = saldo_awal + pemasukan_bulan - pengeluaran_bulan
 
     rincian_masuk = conn.execute(

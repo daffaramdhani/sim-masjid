@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Sarana &amp; Pemeliharaan - Sistem Informasi Masjid Nurul Hasanah{% endblock %}
+{% block content %}
+<section class="container structure-page">
+  <header class="structure-page-head">
+    <h1>Sarana &amp; Pemeliharaan</h1>
+    <p>Daftar kegiatan divisi sarana dan pemeliharaan Masjid Nurul Hasanah.</p>
+  </header>
+  <div class="sarana-public-grid">
+    {% for key, title in [
+      ('sarana_pemeliharaan', 'Divisi Sarana dan Pemeliharaan'),
+      ('purnomo', 'Divisi Purnomo')
+    ] %}
+    <section class="panel sarana-public-panel">
+      <h2>{{ title }}</h2>
+      {% for item in data_divisi[key] %}
+      <div class="sarana-public-item">{{ item.kegiatan }}</div>
+      {% else %}
+      <p class="sarana-public-empty">Belum ada kegiatan yang ditambahkan.</p>
+      {% endfor %}
+    </section>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

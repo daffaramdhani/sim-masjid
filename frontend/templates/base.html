@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{% block title %}Sistem Informasi Masjid{% endblock %}</title>
+<title>{% block title %}Sistem Informasi Masjid Nurul Hasanah{% endblock %}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -17,11 +17,13 @@
   <div class="container header-inner">
     <a href="{{ url_for('beranda') }}" class="brand">
       <span class="brand-icon"><img src="{{ url_for('static', filename='img/masjid.png') }}" alt="Logo masjid"></span>
-      <span>Sistem Informasi Masjid</span>
+      <span>Sistem Informasi Masjid Nurul Hasanah</span>
     </a>
     <nav class="main-nav">
       <a href="{{ url_for('beranda') }}" class="{{ 'active' if request.endpoint=='beranda' }}">Beranda</a>
       <a href="{{ url_for('beranda') }}#profil">Profil</a>
+      <a href="{{ url_for('struktur_masjid_publik') }}" class="{{ 'active' if request.endpoint=='struktur_masjid_publik' }}">Struktur Masjid</a>
+      <a href="{{ url_for('sarana_pemeliharaan_publik') }}" class="{{ 'active' if request.endpoint=='sarana_pemeliharaan_publik' }}">Sarana &amp; Pemeliharaan</a>
       <a href="{{ url_for('kegiatan_publik') }}" class="{{ 'active' if request.endpoint=='kegiatan_publik' }}">Kegiatan</a>
       <a href="{{ url_for('kajian_publik') }}" class="{{ 'active' if request.endpoint=='kajian_publik' }}">Kajian</a>
       <a href="{{ url_for('berita_publik') }}" class="{{ 'active' if request.endpoint=='berita_publik' }}">Berita</a>
@@ -42,7 +44,7 @@
   <div class="container footer-inner">
     <div class="brand footer-brand">
       <span class="brand-icon"><img src="{{ url_for('static', filename='img/masjid.png') }}" alt="Logo masjid"></span>
-      <span>Sistem Informasi Masjid</span>
+      <span>Sistem Informasi Masjid Nurul Hasanah</span>
     </div>
     <p>Media informasi dan transparansi kegiatan serta keuangan masjid untuk kemaslahatan umat.</p>
     <p class="footer-copy">© {{ now().year if now else '2025' }} Sistem Informasi Masjid Nurul Hasanah. Dibangun dengan amanah.</p>

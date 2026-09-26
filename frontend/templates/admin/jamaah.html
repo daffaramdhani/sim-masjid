@@ -27,7 +27,7 @@
       <tbody>
         {% for j in jamaah %}
         <tr>
-          <td>{{ loop.index + (page-1)*5 }}</td>
+          <td>{{ loop.index + (page-1)*per_page }}</td>
           <td>{{ j.nama }}</td>
           <td>{{ j.jenis_kelamin }}</td>
           <td>{{ j.no_telepon or '-' }}</td>

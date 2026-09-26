@@ -62,8 +62,12 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
+const formatRupiah = (value) => new Intl.NumberFormat('id-ID', {
+  style: 'currency', currency: 'IDR', maximumFractionDigits: 0
+}).format(value);
+
 new Chart(document.getElementById('dashChart'), {
   type: 'bar',
   data: {
@@ -75,9 +79,16 @@ new Chart(document.getElementById('dashChart'), {
   },
   options: {
     responsive: true,
-    plugins: { legend: { display: false } },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context) => `${context.dataset.label}: ${formatRupiah(context.parsed.y)}`
+        }
+      }
+    },
     scales: {
-      y: { grid: { color: '#EFE9D8' }, ticks: { callback: (v) => (v/1000000) + ' Jt' } },
+      y: { grid: { color: '#EFE9D8' }, ticks: { callback: (value) => formatRupiah(value) } },
       x: { grid: { display: false } }
     }
   }
